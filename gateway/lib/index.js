@@ -16,6 +16,10 @@ const broker = new ServiceBroker({
 
 broker.createService({
   name: 'gateway-service',
+  dependencies: [
+    'author',
+    'book'
+  ],
   created() {
     this.server = http.createServer((req, res) => {
       this.requestHandler(req).then((result) => {
@@ -29,6 +33,23 @@ broker.createService({
     });
   },
   async started() {
+    const services = await this.broker.call('$node.services', { skipInternal: true });
+    
+    this.operationMap = {};
+    
+    for (const service of services) {
+      const info = await this.broker.call(`${service.name}.introspect`);
+      
+      for (const [operation, entries] of Object.entries(info.operations)) {
+        if (!this.operationMap[operation]) {
+          this.operationMap[operation] = {};
+        }
+        for (const entry of entries) {
+          this.operationMap[operation][entry] = `${service.name}.execute`;
+        }
+      }
+    }
+    
     const url = await this.listen(4000);
 
     debug(`http server listening on ${url}`);
@@ -88,15 +109,14 @@ broker.createService({
         return merged;
       }, { data: {}, errors: [] });
     },
-    //DUMMY NOT DOING DISCOVERY RIGHT NOW
     mapOperations(operationName, attribute) {
-      const map = {
-        query: {
-          author: 'author.execute',
-          book: 'book.execute'
-        }
-      };
-      return map[operationName] && map[operationName][attribute];
+      return this.operationMap[operationName] && this.operationMap[operationName][attribute];
+    }
+  },
+  events: {
+    'upstream.started'(info) {
+      console.log('UPSTREAM STARTED EVNET')
+      console.log(info);
     }
   }
 });

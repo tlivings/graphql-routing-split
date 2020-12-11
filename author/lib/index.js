@@ -37,8 +37,30 @@ broker.createService({
     });
     
     this.schema = schema;
+    
+    this.operations = this.getOperations(this.schema);
+  },
+  methods: {
+    getOperations(schema) {
+      const queryType = schema.getQueryType();
+      const mutationType = schema.getMutationType();
+      
+      const operations = {};
+      
+      if (queryType) {
+        operations.query = Object.keys(queryType.getFields());
+      }
+      if (mutationType) {
+        operations.mutation = Object.keys(mutationType.getFields());
+      }
+      
+      return operations;
+    }
   },
   actions: {
+    introspect(ctx) {
+      return { name: this.name, operations: this.operations };
+    },
     async execute(ctx) {
       const { document, originalQuery } = ctx.params;
 
