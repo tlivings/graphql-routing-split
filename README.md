@@ -1,6 +1,6 @@
 # graphql-routing-split
 Playing with routing some graphql by splitting it across different microservices that represent distinct 
-(with no cohesion) API destinations (i.e. use a query aggregate but do not have cohesive API to hit)
+(with no cohesion) API destinations (i.e. use a query aggregate but do not have cohesive API to hit).
 
 ### Design
 
@@ -10,11 +10,14 @@ This project consists of 3 services:
 2. Author
 3. Book
 
-The services are all [moleculer](https://moleculer.services/) based. `Author` and `Book` provide 
-introspection endpoints which `Gateway` will use to decide how to split up graphql documents into 
-the appropriate upstreams.
+The services are all [moleculer](https://moleculer.services/) based (for simplicity). 
 
-The purpose is simply to demonstrate an alternative to classical schema stitching.
+`Author` and `Book` provide introspection endpoints which `Gateway` will use to decide how to 
+split up graphql documents into the appropriate upstreams.
+
+The purpose is simply to demonstrate an alternative to classical schema stitching. In addition, it is 
+an example of how to separate gateways or various services with distinct (and not necessarily cohesive) 
+APIs could still be handled by a single endpoint query.
 
 ### How to run
 
